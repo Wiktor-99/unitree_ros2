@@ -15,7 +15,7 @@ RUN userdel ubuntu && groupadd --gid $USER_GID $USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
 RUN apt-get update && apt-get upgrade -y \
-    && apt-get install -y python3-pip git-core bash-completion
+    && apt-get install -y python3-pip git-core bash-completion liblcm-dev
 
 RUN apt-get update && apt-get -y install \
     ros-$ROS_DISTRO-rmw-cyclonedds-cpp \
