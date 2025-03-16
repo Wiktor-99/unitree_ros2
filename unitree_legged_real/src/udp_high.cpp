@@ -5,6 +5,7 @@
 #include "ros2_unitree_legged_msgs/msg/low_state.hpp"
 #include "unitree_legged_sdk/unitree_legged_sdk.h"
 #include "convert.h"
+#include "geometry_msgs/msg/twist.hpp"
 
 using UNITREE_LEGGED_SDK::UDP;
 using UNITREE_LEGGED_SDK::HighCmd;
@@ -20,7 +21,7 @@ public:
 
 public:
   UDPHighBridge()
-  : udp(8090, "192.168.123.161", 8082, sizeof(HighCmd), sizeof(HighState))
+  : udp(8090, "192.168.12.1", 8082, sizeof(HighCmd), sizeof(HighState))
   {
     udp.InitCmdData(cmd);
   }
@@ -47,20 +48,36 @@ public:
 
     //Publishers
     pub_state_ = this->create_publisher<ros2_unitree_legged_msgs::msg::HighState>("high_state", 10);
-    
+
     //Subscribers
     sub_cmd_ = this->create_subscription<ros2_unitree_legged_msgs::msg::HighCmd>(
       "high_cmd",
       10,
       std::bind(&UDPHighNode::cmd_callback, this, std::placeholders::_1)
     );
+
+    cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
+      "cmd_vel",
+      10,
+      std::bind(&UDPHighNode::cmd_vel_callback, this, std::placeholders::_1));
   }
+
+  void cmd_vel_callback(const geometry_msgs::msg::Twist::UniquePtr msg) {
+    bridge_.cmd.velocity[0] = msg->linear.x;
+    bridge_.cmd.velocity[1] = msg->linear.y;
+    bridge_.cmd.yawSpeed = msg->angular.z;
+
+    bridge_.udp.SetSend(bridge_.cmd);
+    bridge_.udp.Send();
+  }
+
 
 private:
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<ros2_unitree_legged_msgs::msg::HighState>::SharedPtr pub_state_;
   rclcpp::Subscription<ros2_unitree_legged_msgs::msg::HighCmd>::SharedPtr sub_cmd_;
-  
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
+
 
   double rate_, interval_;
   UDPHighBridge bridge_;

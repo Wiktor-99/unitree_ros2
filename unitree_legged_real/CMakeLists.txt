@@ -8,6 +8,7 @@ find_package(rclcpp REQUIRED)
 
 find_package(ros2_unitree_legged_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 
 message(STATUS "-- CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
@@ -39,7 +40,7 @@ ament_target_dependencies(ros2_udp rclcpp ros2_unitree_legged_msgs)
 
 add_executable(udp_high src/udp_high.cpp)
 target_link_libraries(udp_high ${EXTRA_LIBS})
-ament_target_dependencies(udp_high rclcpp ros2_unitree_legged_msgs)
+ament_target_dependencies(udp_high rclcpp ros2_unitree_legged_msgs geometry_msgs)
 
 add_executable(jsp_high src/jsp_high.cpp)
 target_link_libraries(jsp_high ${EXTRA_LIBS})
